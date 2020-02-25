@@ -1,0 +1,21 @@
+[package]
+name = "custom_string_serde"
+version = "0.1.0"
+authors = ["dskkato <kato.daisuke429@gmail.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[[test]]
+name = "tests"
+path = "tests/test.rs"
+
+[dependencies]
+quote = "1.0"
+syn = "1.0"
+proc-macro2 = "1.0"
+
+[dev-dependencies]
+trybuild = "1.0.19"
+serde = "1"
