@@ -11,6 +11,10 @@ pub fn custom_string_serde(input: StdTokenStream) -> StdTokenStream {
     let args = parser.parse(tokens).unwrap();
     let mut expanded = Vec::new();
 
+    expanded.push(quote! {
+        // import module here if necessary
+    });
+
     for arg in args {
         let lit = match arg {
             Expr::Lit(lit) => lit.lit,
@@ -32,6 +36,26 @@ pub fn custom_string_serde(input: StdTokenStream) -> StdTokenStream {
                bytes: [u8; #n],
            }
 
+           impl #struct_ident {
+               pub fn new() -> Self {
+                    #struct_ident { bytes: [0u8; #n ] }
+               }
+
+               pub fn from(s: &str) -> Self {
+                    let mut bytes = [0u8; #n];
+                    bytes[..s.len()].copy_from_slice(&s.as_bytes()[..]);
+                    #struct_ident { bytes }
+               }
+
+               #[inline]
+               pub fn len(&self) -> usize {
+                    self.bytes
+                        .iter()
+                        .position(|&x| x == 0)
+                        .unwrap_or(#n)
+               }
+           }
+
             impl std::fmt::Debug for #struct_ident {
                 fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                     let n = self
@@ -42,6 +66,17 @@ pub fn custom_string_serde(input: StdTokenStream) -> StdTokenStream {
                     let s = std::str::from_utf8(&self.bytes[..n]).unwrap();
 
                     write!(f, "{}", s)
+                }
+            }
+
+            impl std::ops::Deref for #struct_ident {
+                type Target = str;
+                #[inline]
+                fn deref(&self) -> &str {
+                    unsafe {
+                        let sl = std::slice::from_raw_parts(&self.bytes as *const u8, self.len());
+                        std::str::from_utf8_unchecked(sl)
+                    }
                 }
             }
 
