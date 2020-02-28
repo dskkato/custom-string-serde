@@ -5,8 +5,7 @@ use quote::quote;
 use syn::{parse::Parser, punctuated::Punctuated, Expr, Lit, Token};
 
 #[proc_macro]
-pub fn custom_string_serde(input: StdTokenStream) -> StdTokenStream {
-    let tokens = input.clone();
+pub fn custom_string_serde(tokens: StdTokenStream) -> StdTokenStream {
     let parser = Punctuated::<Expr, Token![,]>::parse_terminated;
     let args = parser.parse(tokens).unwrap();
     let mut expanded = Vec::new();
